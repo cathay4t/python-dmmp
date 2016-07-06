@@ -4,6 +4,10 @@ Python API of multipath-tools.
 
 ## Install
 
+```bash
+python setup.py install
+```
+
 ## Usage
 
 ## Contact

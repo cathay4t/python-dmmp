@@ -25,3 +25,7 @@ import dmmp
 
 for mpath in dmmp.mpaths_get():
     print(mpath)
+    for pg in mpath.path_groups:
+        print("\t%s" % pg)
+        for p in pg.paths:
+            print("\t\t%s" % p)
