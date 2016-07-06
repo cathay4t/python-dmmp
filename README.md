@@ -10,7 +10,7 @@ python setup.py install
 
 ## Usage
 
-Sample code(for detail, check `help(dmmp)`:
+Sample code, for detail usage, check `help(dmmp)`:
 
 ```python
 import dmmp
