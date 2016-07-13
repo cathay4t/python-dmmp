@@ -19,13 +19,36 @@ Python API for multipath-tools
 
 import json
 import socket
+import ctypes
+import sys
 import struct
+
+
+_API_VERSION_MAJOR = 0
 
 _IPC_ADDR = "\0/org/kernel/linux/storage/multipathd"
 
-_HDR_LEN = 8
+_IPC_LEN_SIZE = ctypes.sizeof(ctypes.c_ssize_t(0))
 
-_API_VERSION_MAJOR = 0
+
+def _len_to_ssize_t_bytes(len_value):
+    try:
+        return struct.pack("n", len_value)
+    except struct.error:
+        h = "%x" % len_value
+        s = ("0" * (len(h) % 2) + h).zfill(_IPC_LEN_SIZE * 2).decode("hex")
+        if sys.byteorder == "little":
+            s = s[::-1]
+        return bytearray(s)
+
+
+def _bytes_to_len(len_bytes):
+    try:
+        return struct.unpack("n", len_bytes)[0]
+    except struct.error:
+        if sys.byteorder == "little":
+            len_bytes = len_bytes[::-1]
+        return int(len_bytes.encode("hex"), 16)
 
 
 class DMMP_path(object):
@@ -287,9 +310,13 @@ class DMMP_mpath(object):
 
 
 def _ipc_exec(s, cmd):
-    buff = struct.pack("=Q", len(cmd) + 1) + bytearray(cmd, 'utf-8') + b'\0'
+    buff = _len_to_ssize_t_bytes(len(cmd) + 1) + bytearray(cmd, 'utf-8') + \
+        b'\0'
     s.sendall(buff)
-    output_len = struct.unpack("=Q", s.recv(_HDR_LEN))[0]
+    buff = s.recv(_IPC_LEN_SIZE)
+    if not buff:
+        return ""
+    output_len = _bytes_to_len(buff)
     output = s.recv(output_len).decode("utf-8")
     return output.strip('\x00')
 
@@ -309,6 +336,8 @@ def mpaths_get():
     s.connect(_IPC_ADDR)
     json_str = _ipc_exec(s, "show maps json")
     s.close()
+    if len(json_str) == 0:
+        return rc
     all_data = json.loads(json_str)
     if all_data["major_version"] != _API_VERSION_MAJOR:
         raise exception("incorrect version")

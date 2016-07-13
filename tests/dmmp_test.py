@@ -23,7 +23,10 @@ sys.path.append(os.path.dirname(_CURRENT_DIR))
 
 import dmmp
 
-for mpath in dmmp.mpaths_get():
+mpaths = dmmp.mpaths_get()
+print("Got %d paths" % len(mpaths))
+
+for mpath in mpaths:
     print("Got mpath: wwid '%s', name '%s'" % (mpath.wwid, mpath.name))
     for pg in mpath.path_groups:
         print("\tGot path group: id '%d', priority '%d', status '%d(%s)', "
