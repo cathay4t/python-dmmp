@@ -305,6 +305,13 @@ class DMMP_mpath(object):
         """
         return self._path_groups
 
+    @property
+    def paths(self):
+        rc = []
+        for pg in self.path_groups:
+            rc.extend(pg.paths)
+        return rc
+
     def __str__(self):
         return "'%s'|'%s'" % (self.wwid, self.name)
 
