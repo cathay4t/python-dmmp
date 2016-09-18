@@ -307,10 +307,20 @@ class DMMP_mpath(object):
 
     @property
     def paths(self):
+        """
+        List of DMMP_path objects
+        """
         rc = []
         for pg in self.path_groups:
             rc.extend(pg.paths)
         return rc
+
+    @property
+    def kdev_name(self):
+        """
+        The string for DEVNAME used by kernel in uevent.
+        """
+        return self._sysfs
 
     def __str__(self):
         return "'%s'|'%s'" % (self.wwid, self.name)
