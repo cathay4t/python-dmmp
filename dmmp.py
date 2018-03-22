@@ -30,25 +30,10 @@ _IPC_ADDR = "\0/org/kernel/linux/storage/multipathd"
 
 _IPC_LEN_SIZE = ctypes.sizeof(ctypes.c_ssize_t(0))
 
-
-def _len_to_ssize_t_bytes(len_value):
-    try:
-        return struct.pack("n", len_value)
-    except struct.error:
-        h = "%x" % len_value
-        s = ("0" * (len(h) % 2) + h).zfill(_IPC_LEN_SIZE * 2).decode("hex")
-        if sys.byteorder == "little":
-            s = s[::-1]
-        return bytearray(s)
-
-
-def _bytes_to_len(len_bytes):
-    try:
-        return struct.unpack("n", len_bytes)[0]
-    except struct.error:
-        if sys.byteorder == "little":
-            len_bytes = len_bytes[::-1]
-        return int(len_bytes.encode("hex"), 16)
+if sys.version_info[0] < 3:
+    _CMD_HEAD = struct.Struct("q" if _IPC_LEN_SIZE == 8 else "i")
+else:
+    _CMD_HEAD = struct.Struct("n")
 
 
 class DMMP_path(object):
@@ -327,13 +312,12 @@ class DMMP_mpath(object):
 
 
 def _ipc_exec(s, cmd):
-    buff = _len_to_ssize_t_bytes(len(cmd) + 1) + bytearray(cmd, 'utf-8') + \
-        b'\0'
+    buff = _CMD_HEAD.pack(len(cmd) + 1) + bytearray(cmd, 'utf-8') + b'\0'
     s.sendall(buff)
     buff = s.recv(_IPC_LEN_SIZE)
     if not buff:
         return ""
-    output_len = _bytes_to_len(buff)
+    output_len = _CMD_HEAD.unpack(buff)[0]
     output = s.recv(output_len).decode("utf-8")
     return output.strip('\x00')
 
