@@ -46,7 +46,6 @@ class DMMP_path(object):
         """
         for key, value in path.items():
             setattr(self, "_%s" % key, value)
-        self._status = DMMP_path._status_str_to_enum(self._chk_st)
 
     STATUS_UNKNOWN = 0
     STATUS_DOWN = 2
@@ -58,47 +57,15 @@ class DMMP_path(object):
     STATUS_DELAYED = 9
 
     _STATUS_CONV = {
-        STATUS_UNKNOWN: "undef",
-        STATUS_UP: "ready",
-        STATUS_DOWN: "faulty",
-        STATUS_SHAKY: "shaky",
-        STATUS_GHOST: "ghost",
-        STATUS_PENDING: "i/o pending",
-        STATUS_TIMEOUT: "i/o timeout",
-        STATUS_DELAYED: "delayed",
+        "undef": STATUS_UNKNOWN,
+        "faulty": STATUS_DOWN,
+        "ready": STATUS_UP,
+        "shaky": STATUS_SHAKY,
+        "ghost": STATUS_GHOST,
+        "i/o pending": STATUS_PENDING,
+        "i/o timeout": STATUS_TIMEOUT,
+        "delayed": STATUS_DELAYED,
     }
-
-    @staticmethod
-    def _status_str_to_enum(status_str):
-        for key, value in DMMP_path._STATUS_CONV.items():
-            if value == status_str:
-                return key
-        return DMMP_path.STATUS_UNKNOWN
-
-    @staticmethod
-    def status_to_str(status):
-        """
-        Usage:
-            Convert status integer to human readable string:
-                DMMP_path.STATUS_UNKNOWN:       "undef"
-                DMMP_path.STATUS_UP:            "ready"
-                DMMP_path.STATUS_DOWN:          "faulty"
-                DMMP_path.STATUS_SHAKY:         "shaky"
-                DMMP_path.STATUS_GHOST:         "ghost"
-                DMMP_path.STATUS_PENDING:       "i/o pending"
-                DMMP_path.STATUS_TIMEOUT:       "i/o timeout"
-                DMMP_path.STATUS_DELAYED:       "delayed"
-        Parameters:
-            status              Integer. DMMP_path.status
-        Returns:
-            status_str          String.
-        Exception:
-            ValueError          If got illegal status.
-        """
-        try:
-            return DMMP_path._STATUS_CONV[status]
-        except KeyError:
-            return ValueError("Invalid path status %d" % status)
 
     @property
     def blk_name(self):
@@ -137,10 +104,33 @@ class DMMP_path(object):
             until it has been up for delay_wait_checks checks. During this
             time, it is marked as "delayed".
         """
-        return self._status
+        return self._STATUS_CONV.get(self.status_string, self.STATUS_UNKNOWN)
+
+    @property
+    def status_string(self):
+        """
+        String. Status of current path. Possible values are:
+        * "undef"
+            STATUS_UNKNOWN
+        * "faulty"
+            STATUS_DOWN
+        * "ready"
+            STATUS_UP
+        * "shaky"
+            STATUS_SHAKY
+        * "ghost"
+            STATUS_GHOST
+        * "i/o pending"
+            STATUS_PENDING
+        * "i/o timeout"
+            STATUS_TIMEOUT
+        * "delayed"
+            STATUS_DELAYED
+        """
+        return self._chk_st
 
     def __str__(self):
-        return "%s|%s" % (self.blk_name, DMMP_path.status_to_str(self.status))
+        return "%s|%s" % (self.blk_name, self.status_string)
 
 
 class DMMP_pathgroup(object):
@@ -159,47 +149,17 @@ class DMMP_pathgroup(object):
             else:
                 setattr(self, "_%s" % key, value)
 
-        self._status = DMMP_pathgroup._status_str_to_enum(self._dm_st)
-
     STATUS_UNKNOWN = 0
     STATUS_ENABLED = 1
     STATUS_DISABLED = 2
     STATUS_ACTIVE = 3
 
     _STATUS_CONV = {
-        STATUS_UNKNOWN: "undef",
-        STATUS_ENABLED: "enabled",
-        STATUS_DISABLED: "disabled",
-        STATUS_ACTIVE: "active",
+        "undef": STATUS_UNKNOWN,
+        "enabled": STATUS_ENABLED,
+        "disabled": STATUS_DISABLED,
+        "active": STATUS_ACTIVE,
     }
-
-    @staticmethod
-    def _status_str_to_enum(status_str):
-        for key, value in DMMP_pathgroup._STATUS_CONV.items():
-            if value == status_str:
-                return key
-        return DMMP_pathgroup.STATUS_UNKNOWN
-
-    @staticmethod
-    def status_to_str(status):
-        """
-        Usage:
-            Convert status integer to human readable string:
-                DMMP_pathgroup.STATUS_UNKNOWN:       "undef"
-                DMMP_pathgroup.STATUS_ENABLED:       "enabled"
-                DMMP_pathgroup.STATUS_DISABLED:      "disabled"
-                DMMP_pathgroup.STATUS_ACTIVE:        "active"
-        Parameters:
-            status              Integer. DMMP_pathgroup.status
-        Returns:
-            status_str          String.
-        Exception:
-            ValueError          If got illegal status.
-        """
-        try:
-            return DMMP_pathgroup._STATUS_CONV[status]
-        except KeyError:
-            return ValueError("Invalid path group status %d" % status)
 
     @property
     def id(self):
@@ -222,7 +182,22 @@ class DMMP_pathgroup(object):
         * DMMP_pathgroup.STATUS_ACTIVE
             Selected to handle I/O
         """
-        return self._status
+        return self._STATUS_CONV.get(self.status_string, self.STATUS_UNKNOWN)
+
+    @property
+    def status_string(self):
+        """
+        String. Status of current path group. Possible values are:
+        * "undef"
+            STATUS_UNKNOWN
+        * "enabled"
+            STATUS_ENABLED
+        * "disabled"
+            STATUS_DISABLED
+        * "active"
+            STATUS_ACTIVE
+        """
+        return self._dm_st
 
     @property
     def priority(self):
@@ -249,8 +224,7 @@ class DMMP_pathgroup(object):
         return self._paths
 
     def __str__(self):
-        return "%s|%s|%d" % (
-            self.id, DMMP_pathgroup.status_to_str(self.status), self.priority)
+        return "%s|%s|%d" % (self.id, self.status_string, self.priority)
 
 
 class DMMP_mpath(object):

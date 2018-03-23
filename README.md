@@ -20,13 +20,11 @@ for mpath in dmmp.mpaths_get():
     for pg in mpath.path_groups:
         print("\tGot path group: id '%d', priority '%d', status '%d(%s)', "
               "selector '%s'" %
-              (pg.id, pg.priority, pg.status,
-               dmmp.DMMP_pathgroup.status_to_str(pg.status), pg.selector))
+              (pg.id, pg.priority, pg.status, pg.status_string, pg.selector))
 
         for p in pg.paths:
             print("\t\tGot path: blk_name '%s', status '%d(%s)'" %
-                  (p.blk_name, p.status,
-                   dmmp.DMMP_path.status_to_str(p.status)))
+                  (p.blk_name, p.status, p.status_string))
 ```
 
 ## Contact
