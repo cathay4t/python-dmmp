@@ -1,7 +1,7 @@
 """
 Python API for multipath-tools
 """
-# Copyright (C) 2016 Red Hat, Inc.
+# Copyright (C) 2016-2018 Red Hat, Inc.
 # This library is free software; you can redistribute it and/or
 # modify it under the terms of the GNU Lesser General Public
 # License as published by the Free Software Foundation; either
@@ -16,6 +16,7 @@ Python API for multipath-tools
 # License along with this library; If not, see <http://www.gnu.org/licenses/>.
 #
 # Author: Gris Ge <fge@redhat.com>
+#         Nir Soffer <nsoffer@redhat.com>
 
 import json
 import socket
